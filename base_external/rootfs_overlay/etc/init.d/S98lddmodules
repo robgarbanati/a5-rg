@@ -1,0 +1,19 @@
+#!/bin/sh
+case "$1" in
+    start)
+        echo "Loading ldd directories..."
+        modprobe scull
+        major=$(awk '$2=="scull" {print $1}' /proc/devices)
+        mknod /dev/scull0 c major 0
+        modprobe faulty
+        major=$(awk '$2=="faulty" {print $1}' /proc/devices)
+        mknod /dev/faulty0 c major 0
+        modprobe hello
+        major=$(awk '$2=="hello" {print $1}' /proc/devices)
+        mknod /dev/hello0 c major 0
+
+    end)
+        modprobe -r scull
+        modprobe -r faulty
+        modprobe -r hello
+
