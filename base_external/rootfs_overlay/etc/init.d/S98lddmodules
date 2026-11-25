@@ -1,19 +1,39 @@
 #!/bin/sh
+device="scull"
 case "$1" in
     start)
         echo "Loading ldd directories..."
         modprobe scull
         major=$(awk '$2=="scull" {print $1}' /proc/devices)
-        mknod /dev/scull0 c major 0
+        rm -f /dev/scull*
+        for i in 0 1 2 3; do mknod /dev/scull$i c $major $i; done
+        rm -f /dev/${device}pipe[0-3]
+        mknod /dev/${device}pipe0  c $major 4
+        mknod /dev/${device}pipe1  c $major 5
+        mknod /dev/${device}pipe2  c $major 6
+        mknod /dev/${device}pipe3  c $major 7
+        rm -f /dev/${device}single
+        mknod /dev/${device}single c $major 8
+        rm -f /dev/${device}uid
+        mknod /dev/${device}uid    c $major 9
+        rm -f /dev/${device}wuid
+        mknod /dev/${device}wuid   c $major 10
+        rm -f /dev/${device}priv
+        mknod /dev/${device}priv   c $major 11
+
+
         modprobe faulty
         major=$(awk '$2=="faulty" {print $1}' /proc/devices)
-        mknod /dev/faulty0 c major 0
+        mknod /dev/faulty c $major 0
         modprobe hello
-        major=$(awk '$2=="hello" {print $1}' /proc/devices)
-        mknod /dev/hello0 c major 0
-
-    end)
-        modprobe -r scull
-        modprobe -r faulty
+    ;;
+    stop)
         modprobe -r hello
+        modprobe -r faulty
+        rm -f /dev/faulty
+        modprobe -r scull
+        rm -f /dev/scull*
+    ;;
+esac
+exit 0
 
